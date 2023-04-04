@@ -1,0 +1,56 @@
+---
+- name: Deployer un serveur Apache
+  hosts: EC_2
+  remote_user: root
+  become: yes
+  tasks:
+
+   - name: Upgrade apt
+     apt:
+       upgrade: yes
+     
+   - name: update apt
+     apt:
+       update_cache: yes
+       
+   - name: Install Apache
+     apt:
+       name: apache2
+       state: present
+       
+       
+   - name: Demarrer le service Apache
+     service:
+       name: apache2
+       state: started
+        
+   - name: Modifier la configuration d'Apache
+     replace:
+        path: /etc/apache2/sites-available/000-default.conf
+        regexp: 'DocumentRoot.*'
+        replace: 'DocumentRoot /var/www/example.com'
+        backup: yes
+       
+         
+   - name: Creer le repertoire pour example.com
+     file:
+        path: /var/www/example.com
+        state: directory
+        mode: '0744'
+   - name: Copier le fichier index.html
+     copy:
+       content: "Hello World!"
+       dest: "{{ virtual_host_directory }}/index.html"
+
+
+   - name: Regarder si il ya un changement dans le fichier de configuration apache
+     stat:
+       path: /etc/apache2/sites-available/000-default.conf
+     register: apache_conf
+
+   - name: redemarrer le service Apache uniquement lorsque des modifications ont ete apportees.
+     service:
+       name: apache2
+       state: restarted
+     when: apache_conf.changed
+

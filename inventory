@@ -1,0 +1,1 @@
+machine_1 ansible_host= ansible_user=ubuntu ansible_ssh_private_key_file=/home/ubuntu/SidAli_Key.pem
